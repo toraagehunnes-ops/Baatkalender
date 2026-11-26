@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Båtkalender</title>
+<style>
+:root{
+  --primary:#67b7e8; --primary-dark:#2388c7; --primary-soft:#eaf7ff;
+  --ink:#17324a; --muted:#60788c; --card:#ffffff; --line:#cfe8f7;
+  --shadow:0 12px 30px rgba(34,116,165,.13);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent} html{touch-action:manipulation} button,.weekend{touch-action:manipulation} button{min-height:44px} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#dff4ff 0,#f6fbff 340px,#eef7fb 100%);color:var(--ink);min-height:100vh}
+header{padding:34px 20px 82px;background:linear-gradient(135deg,#82cef4,#45a9df);color:white;position:relative;overflow:hidden}
+header:after{content:"";position:absolute;inset:auto -12% -70px -12%;height:130px;border-radius:50%;background:#f6fbff}
+.hero{max-width:1180px;margin:auto;position:relative;z-index:1;display:flex;justify-content:space-between;gap:24px;align-items:flex-end}
+h1{margin:0;font-size:clamp(2rem,4vw,3.35rem);letter-spacing:-.04em}.subtitle{margin:8px 0 0;opacity:.94;font-size:1.04rem}
+main{max-width:1180px;margin:-45px auto 60px;padding:0 18px;position:relative;z-index:2}
+.panel{background:rgba(255,255,255,.96);border:1px solid rgba(255,255,255,.75);border-radius:22px;box-shadow:var(--shadow);padding:20px}
+.controls{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;margin-bottom:16px}
+.field{display:flex;align-items:center;gap:10px}.field label{font-weight:700}.field select,.field input{border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--ink);background:white;font:inherit}
+button{border:0;border-radius:12px;padding:11px 15px;font:700 14px/1 Segoe UI,Arial;cursor:pointer;transition:.18s transform,.18s box-shadow,.18s background}
+button:hover{transform:translateY(-1px)}.primary{background:var(--primary-dark);color:white;box-shadow:0 7px 16px rgba(35,136,199,.23)}.secondary{background:var(--primary-soft);color:var(--primary-dark);border:1px solid var(--line)}.danger{background:#fff1f1;color:#aa3030;border:1px solid #ffd1d1}
+.notice{display:none;margin:0 0 16px;padding:12px 14px;border:1px solid #90d4f5;background:#eefaff;border-radius:12px;color:#23678d}.notice.show{display:block}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}.stat{padding:16px;border:1px solid var(--line);border-radius:16px;background:#fbfeff}.stat b{display:block;font-size:1.6rem;margin-top:3px}.ownerline{display:flex;align-items:center;gap:9px;font-weight:700}.dot{width:12px;height:12px;border-radius:50%}
+.calendar{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.weekend{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;min-height:154px;box-shadow:0 6px 18px rgba(44,119,160,.07);cursor:pointer;overflow:hidden;transition:.18s}.weekend:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(44,119,160,.13)}.weekend.selected{outline:3px solid #1d8dca;outline-offset:1px}.weekend:before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:var(--owner)}
+.weekno{font-size:.77rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.dates{font-size:1.13rem;font-weight:800;margin:6px 0 16px}.owner{display:flex;gap:10px;align-items:center}.avatar{width:38px;height:38px;border-radius:50%;background:var(--owner);color:white;display:grid;place-items:center;font-weight:800}.ownername{font-weight:800}.hint{font-size:.78rem;color:var(--muted);margin-top:5px}.manual{position:absolute;right:11px;top:10px;background:#fff3c9;color:#7a5a00;border-radius:999px;padding:4px 7px;font-size:.68rem;font-weight:800}
+.footerbar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:18px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}.legend{display:flex;flex-wrap:wrap;gap:14px}.legend span{display:flex;align-items:center;gap:6px}
+.modal{position:fixed;inset:0;background:rgba(10,38,57,.48);display:none;place-items:center;padding:18px;z-index:20}.modal.open{display:grid}.dialog{width:min(480px,100%);background:white;border-radius:20px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.25)}.dialog h2{margin:0 0 8px}.dialog p{margin:0 0 18px;color:var(--muted)}.ownerbuttons{display:grid;gap:10px}.ownerbtn{display:flex;align-items:center;gap:10px;padding:13px;background:#f8fcff;border:1px solid var(--line);color:var(--ink);text-align:left}.dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:17px}
+@media(max-width:850px){.controls{grid-template-columns:1fr 1fr}.calendar{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:570px){
+body{background:#f4fbff} header{padding:20px 16px 58px} .hero{align-items:flex-start;flex-direction:column;gap:8px} h1{font-size:2rem}.subtitle{font-size:.93rem}.seasonLabel{font-size:1rem}
+main{margin:-34px auto 34px;padding:0 10px}.panel{padding:11px;border-radius:18px}.controls{grid-template-columns:1fr 1fr;gap:8px}.field{grid-column:1/-1;justify-content:space-between}.field select{min-width:120px}.controls button{padding:12px 8px;font-size:.82rem}.stats{grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}.stat{padding:10px 7px;border-radius:13px;text-align:center}.ownerline{font-size:.74rem;justify-content:center;line-height:1.15}.stat b{font-size:1.35rem}.stat span:last-child{font-size:.7rem}.calendar{grid-template-columns:1fr;gap:9px}.weekend{min-height:auto;padding:13px 13px 13px 17px;border-radius:15px}.dates{margin:4px 0 10px;font-size:1.02rem}.avatar{width:34px;height:34px}.ownername{font-size:.94rem}.hint{font-size:.72rem}.footerbar{align-items:flex-start;flex-direction:column;font-size:.78rem}.legend{gap:8px}.dialog{padding:18px}.ownerbtn{min-height:48px}
+}
+@media print{body{background:white}header{padding:18px 18px 28px}.hero{color:#17324a}header:after,.controls,.notice,.hint,.footerbar button{display:none!important}main{margin:0}.panel{box-shadow:none;border:0}.calendar{grid-template-columns:repeat(3,1fr)}.weekend{break-inside:avoid}}
+.sync{display:inline-flex;align-items:center;gap:7px;font-weight:700}.sync:before{content:"";width:9px;height:9px;border-radius:50%;background:#aab}.sync.ok:before{background:#3bb273}.sync.warn:before{background:#e0a800}.sync.off:before{background:#c94b4b}
+</style>
+</head>
+<body>
+<header><div class="hero"><div><h1>⛵ Båtkalender</h1><p class="subtitle">Rettferdig helgerullering fra 15. mai til 15. september</p></div><div id="seasonLabel" class="seasonLabel" style="font-weight:800;font-size:1.15rem"></div></div></header>
+<main><section class="panel">
+  <div class="controls">
+    <div class="field"><label for="year">Sesong</label><select id="year"></select></div>
+    <button class="secondary" id="swapBtn">Bytt to helger</button>
+    <button class="secondary" id="printBtn">Skriv ut</button>
+    <button class="danger" id="resetBtn">Tilbakestill året</button>
+  </div>
+  <div class="notice" id="notice"></div>
+  <div class="stats" id="stats"></div>
+  <div class="calendar" id="calendar"></div>
+  <div class="footerbar"><div class="legend" id="legend"></div><div id="sync" class="sync">Kobler til …</div></div>
+</section></main>
+<div class="modal" id="modal"><div class="dialog"><h2>Velg eier</h2><p id="modalText"></p><div class="ownerbuttons" id="ownerButtons"></div><div class="dialog-actions"><button class="secondary" id="cancelModal">Avbryt</button></div></div></div>
+<script>
+const owners=[
+ {name:'Stefan Sjøgren',color:'#2f90c9'},
+ {name:'Christian Røyem',color:'#62b989'},
+ {name:'Tor Åge Hunnes',color:'#8e75cc'}
+];
+const baseYear=2027; // 2027: Stefan, 2028: Christian, 2029: Tor Åge, deretter gjentas rulleringen
+const now=new Date();
+let selectedYear=now.getMonth()>=8?now.getFullYear()+1:now.getFullYear();
+let db=null,canWrite=false,ov={};
+let swapMode=false, swapFirst=null;
+const $=s=>document.querySelector(s);
+function pad(n){return String(n).padStart(2,'0')}
+function iso(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function formatRange(a,b){const m=['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];return `${a.getDate()}. ${m[a.getMonth()]} – ${b.getDate()}. ${m[b.getMonth()]}`}
+function weekNumber(d){const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7));const y=new Date(Date.UTC(t.getUTCFullYear(),0,1));return Math.ceil((((t-y)/86400000)+1)/7)}
+function weekends(year){
+ const start=new Date(year,4,15), end=new Date(year,8,15), out=[];
+ let d=new Date(start); while(d.getDay()!==5)d.setDate(d.getDate()+1);
+ while(d<=end){const sun=new Date(d);sun.setDate(d.getDate()+2);out.push({fri:new Date(d),sun});d.setDate(d.getDate()+7)}
+ return out;
+}
+function startingOwnerIndex(year){return ((year-baseYear)%owners.length+owners.length)%owners.length}
+function defaultAssignments(year){const count=weekends(year).length;const start=startingOwnerIndex(year);return Array.from({length:count},(_,i)=>(start+i)%owners.length)}
+function load(year){const a=defaultAssignments(year);for(let i=0;i<a.length;i++){const v=ov[year+'-'+i];if(Number.isInteger(v)&&v>=0&&v<owners.length)a[i]=v}return a}
+const DB_URL='https://baatkalender-5d4dd-default-rtdb.europe-west1.firebasedatabase.app'
+const base=DB_URL.trim().replace(/\/+$/,'');
+function setSync(t,c){const e=$('#sync');e.textContent=t;e.className='sync '+c}
+function localSave(){try{localStorage.setItem('boat-ov',JSON.stringify(ov))}catch(e){}}
+async function pull(){
+ const r=await fetch(base+'/overrides.json');if(!r.ok)throw new Error(r.status);
+ const d=(await r.json())||{};ov={};
+ for(const k in d){if(d[k]&&Number.isInteger(d[k].owner))ov[k]=d[k].owner}
+ setSync('Synkronisert i sanntid','ok');render();
+}
+async function setOwner(year,i,val){
+ const k=year+'-'+i,del=val===defaultAssignments(year)[i];
+ if(del)delete ov[k];else ov[k]=val;
+ render();
+ if(!base){localSave();return}
+ try{
+  const r=await fetch(base+'/overrides/'+k+'.json',del?{method:'DELETE'}:{method:'PUT',body:JSON.stringify({year,i,owner:val})});
+  if(!r.ok)throw new Error(r.status);
+ }catch(e){showNotice('Kunne ikke lagre endringen. Sjekk nettforbindelsen.');pull().catch(()=>{})}
+}
+async function resetYear(year){
+ const keys=Object.keys(ov).filter(k=>k.startsWith(year+'-'));
+ keys.forEach(k=>delete ov[k]);render();
+ if(!base){localSave();return}
+ try{await Promise.all(keys.map(k=>fetch(base+'/overrides/'+k+'.json',{method:'DELETE'})))}catch(e){showNotice('Kunne ikke tilbakestille. Prøv igjen.')}
+}
+async function init(){
+ db=true;canWrite=true;populateYears();render();
+ if(!base){
+  try{ov=JSON.parse(localStorage.getItem('boat-ov'))||{}}catch(e){ov={}}
+  setSync('Lokal modus – ikke delt (legg inn DB_URL)','warn');render();return;
+ }
+ setSync('Kobler til …','warn');
+ try{await pull()}catch(e){setSync('Får ikke kontakt med lagringen','off')}
+ let t;
+ const h=()=>{clearTimeout(t);t=setTimeout(()=>pull().catch(()=>setSync('Får ikke kontakt med lagringen','off')),150)};
+ const es=new EventSource(base+'/overrides.json');
+ es.addEventListener('put',h);es.addEventListener('patch',h);
+ es.onerror=()=>setSync('Kobler til på nytt …','warn');
+ setInterval(()=>{pull().catch(()=>{})},60000);
+}
+function initials(name){return name.split(' ').map(x=>x[0]).join('').slice(0,2)}
+function populateYears(){const sel=$('#year');for(let y=2025;y<=2045;y++){const o=document.createElement('option');o.value=y;o.textContent=y;sel.appendChild(o)}if(selectedYear<2025||selectedYear>2045)selectedYear=2027;sel.value=selectedYear}
+function render(){
+ const ws=weekends(selectedYear), a=load(selectedYear), def=defaultAssignments(selectedYear);
+ $('#seasonLabel').textContent=`Sesong ${selectedYear} · starter: ${owners[startingOwnerIndex(selectedYear)].name}`;
+ const counts=owners.map((_,i)=>a.filter(x=>x===i).length);
+ $('#stats').innerHTML=owners.map((o,i)=>`<div class="stat"><div class="ownerline"><span class="dot" style="background:${o.color}"></span>${o.name}</div><b>${counts[i]}</b><span>helger denne sesongen</span></div>`).join('');
+ $('#legend').innerHTML=owners.map(o=>`<span><i class="dot" style="background:${o.color}"></i>${o.name}</span>`).join('');
+ $('#calendar').innerHTML=ws.map((w,i)=>{const o=owners[a[i]],manual=a[i]!==def[i];return `<article class="weekend ${swapFirst===i?'selected':''}" data-i="${i}" style="--owner:${o.color}">${manual?'<span class="manual">ENDRET</span>':''}<div class="weekno">Helg ${i+1} · uke ${weekNumber(w.fri)}</div><div class="dates">${formatRange(w.fri,w.sun)}</div><div class="owner"><div class="avatar">${initials(o.name)}</div><div><div class="ownername">${o.name}</div><div class="hint">${canWrite?'Klikk for å endre eier':'Kun visning'}</div></div></div></article>`}).join('');
+ document.querySelectorAll('.weekend').forEach(el=>el.addEventListener('click',()=>onWeekend(+el.dataset.i)));
+}
+function onWeekend(i){
+ if(!db||!canWrite){showNotice(db?'Du har kun visningstilgang til denne kalenderen.':'Delt lagring er ikke tilgjengelig her.');return}
+ if(swapMode){
+   if(swapFirst===null){swapFirst=i;showNotice('Velg nå helgen du vil bytte med.');render();return}
+   if(swapFirst===i){swapFirst=null;showNotice('Valget ble fjernet. Velg første helg på nytt.');render();return}
+   const a=load(selectedYear);const f=swapFirst,x=a[f],y=a[i];setOwner(selectedYear,f,y);setOwner(selectedYear,i,x);swapMode=false;swapFirst=null;$('#swapBtn').textContent='Bytt to helger';showNotice('Helgene er byttet. Fordelingen er beholdt.');render();return
+ }
+ openModal(i);
+}
+function openModal(i){const ws=weekends(selectedYear);$('#modalText').textContent=`Hvem skal ha ${formatRange(ws[i].fri,ws[i].sun)}?`;$('#ownerButtons').innerHTML=owners.map((o,n)=>`<button class="ownerbtn" data-owner="${n}"><span class="dot" style="background:${o.color}"></span>${o.name}</button>`).join('');document.querySelectorAll('.ownerbtn').forEach(b=>b.onclick=()=>{setOwner(selectedYear,i,+b.dataset.owner);closeModal()});$('#modal').classList.add('open')}
+function closeModal(){$('#modal').classList.remove('open')}
+function showNotice(t){const n=$('#notice');n.textContent=t;n.classList.add('show');clearTimeout(showNotice.timer);showNotice.timer=setTimeout(()=>n.classList.remove('show'),4200)}
+$('#year').addEventListener('change',e=>{selectedYear=+e.target.value;swapMode=false;swapFirst=null;render()});
+$('#swapBtn').onclick=()=>{swapMode=!swapMode;swapFirst=null;$('#swapBtn').textContent=swapMode?'Avbryt bytte':'Bytt to helger';showNotice(swapMode?'Velg den første helgen du vil bytte.':'Byttemodus er avsluttet.');render()};
+$('#printBtn').onclick=()=>window.print();
+$('#resetBtn').onclick=()=>{if(confirm(`Tilbakestille alle endringer for ${selectedYear}?`)){resetYear(selectedYear);showNotice('Året er satt tilbake til automatisk rullering.');render()}};
+$('#cancelModal').onclick=closeModal;$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+init();
+</script>
+</body></html>
